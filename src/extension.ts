@@ -6,24 +6,27 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('markdown.run.command', (args) => {
-			if (!terminal || terminal.processId !== undefined) {
-				// If the terminal is closed (exitStatus is defined), or doesn't exist, create a new one
+			// Create or reuse a terminal
+			if (!terminal || (terminal.exitStatus && terminal.exitStatus.code !== undefined)) {
 				terminal = vscode.window.terminals[0] || vscode.window.createTerminal();
 			}
 
 			terminal.show();
-			terminal.sendText(args.command);
+
+			// (1) Send everything as one shot
+			terminal.sendText(args.command, false);
+			// optionally press "Enter" once after all lines
+			terminal.sendText('', true);
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.languages.registerCodeLensProvider({ language: 'markdown', scheme: 'file' },
-			new CommandCodeLensProvider())
+		vscode.languages.registerCodeLensProvider({ language: 'markdown', scheme: 'file' }, new CommandCodeLensProvider())
 	);
 
 	// Clean up the terminal when the extension is deactivated or the terminal is closed
 	context.subscriptions.push(
-		vscode.window.onDidCloseTerminal(closedTerminal => {
+		vscode.window.onDidCloseTerminal((closedTerminal) => {
 			if (closedTerminal === terminal) {
 				terminal = undefined;
 			}

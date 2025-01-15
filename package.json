@@ -1,13 +1,13 @@
 {
-	"name": "markdown-command-runner",
-	"displayName": "Markdown Command Runner",
-	"description": "Easily run commands in markdown files",
+	"name": "procgen-executor",
+	"displayName": "Procgen Md Executor",
+	"description": "Easily run commands in procgen markdown files",
 	"version": "0.1.5",
-	"publisher": "Sycl",
+	"publisher": "product-excellence",
 	"icon": "images/icon.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Ackar/markdown-command-runner.git"
+		"url": "https://github.com/rinormaloku/procgen-executor.git"
 	},
 	"engines": {
 		"vscode": "^1.37.0"

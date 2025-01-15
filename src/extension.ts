@@ -1,36 +1,33 @@
 import * as vscode from 'vscode';
 import { CommandCodeLensProvider } from './commandCodeLensProvider';
-import cp = require('child_process');
 
 export function activate(context: vscode.ExtensionContext) {
+	let terminal: vscode.Terminal | undefined = undefined;
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('markdown.run.command', (args) => {
-			var term = vscode.window.activeTerminal || vscode.window.createTerminal();
-			// check if there's a running command in the active terminal, if there is one
-			// create a new term
-			term.processId.then(pid => {
-				cp.exec('ps -o state= -p ' + pid, (error, stdout, stderr) => {
-					if (error) {
-						// if we can't check just send to the current one...
-						term.show();
-						term.sendText(args.command);
-						return;
-					}
+			if (!terminal || terminal.processId !== undefined) {
+				// If the terminal is closed (exitStatus is defined), or doesn't exist, create a new one
+				terminal = vscode.window.terminals[0] || vscode.window.createTerminal();
+			}
 
-					// a + in the state indicates a process running in foreground
-					if (!stdout.includes('+')) {
-						term = vscode.window.createTerminal();
-					}
-					term.show();
-					term.sendText(args.command);
-				});
-			});
+			terminal.show();
+			terminal.sendText(args.command);
 		})
 	);
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeLensProvider({ language: 'markdown', scheme: 'file' },
 			new CommandCodeLensProvider())
+	);
+
+	// Clean up the terminal when the extension is deactivated or the terminal is closed
+	context.subscriptions.push(
+		vscode.window.onDidCloseTerminal(closedTerminal => {
+			if (closedTerminal === terminal) {
+				terminal = undefined;
+			}
+		})
 	);
 }
 
